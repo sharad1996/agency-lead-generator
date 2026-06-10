@@ -114,7 +114,7 @@ export class LeadOutreachProcessor extends WorkerHost {
     await this.leadsRepo.updateStatus(leadId, LeadStatus.OUTREACH_SENT);
 
     // Schedule follow-up steps using their actual stepIds (aligned with LeadFollowupProcessor)
-    const days = SEQUENCE_DAYS[priority] ?? SEQUENCE_DAYS.STANDARD;
+    const days = SEQUENCE_DAYS[priority as 'HOT' | 'STANDARD'] ?? SEQUENCE_DAYS.STANDARD;
     const pendingSteps = await this.outreachRepo.findPendingStepsBySequenceId(sequenceId);
     for (const pending of pendingSteps) {
       const dayOffset = days[pending.stepNumber - 1] ?? 0;

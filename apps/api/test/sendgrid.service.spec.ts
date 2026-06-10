@@ -34,7 +34,8 @@ describe('SendGridService', () => {
 
   describe('sendEmail', () => {
     it('calls sendgrid.send with correct fields and returns messageId', async () => {
-      mockSendGrid.send.mockResolvedValue([{ headers: { 'x-message-id': 'msg-abc' } }, {}]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      mockSendGrid.send.mockResolvedValue([{ headers: { 'x-message-id': 'msg-abc' } }, {}] as any);
 
       const messageId = await service.sendEmail({
         to: 'alice@example.com',
