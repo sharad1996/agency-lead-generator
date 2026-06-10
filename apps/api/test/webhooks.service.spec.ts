@@ -5,7 +5,6 @@ import { LeadsRepository } from '../src/modules/leads/leads.repository';
 
 const mockOutreachRepo = {
   findSequencesByLeadId: jest.fn(),
-  findSequenceByLeadId: jest.fn(),
   updateSequence: jest.fn(),
 };
 const mockLeadsRepo = { updateStatus: jest.fn() };
@@ -28,7 +27,6 @@ describe('WebhooksService', () => {
   describe('handleInboundEmail', () => {
     it('stops sequence and marks lead REPLIED when leadId extracted from To address', async () => {
       mockOutreachRepo.findSequencesByLeadId.mockResolvedValue([{ id: 'seq-1', tenantId: 'org-1', status: 'ACTIVE' }]);
-      mockOutreachRepo.findSequenceByLeadId.mockResolvedValue({ id: 'seq-1', status: 'ACTIVE' });
 
       await service.handleInboundEmail({
         to: 'reply+lead-abc123@outreach.example.com',
@@ -71,7 +69,6 @@ describe('WebhooksService', () => {
 
     it('does nothing when sequence already stopped', async () => {
       mockOutreachRepo.findSequencesByLeadId.mockResolvedValue([{ id: 'seq-1', tenantId: 'org-1', status: 'STOPPED' }]);
-      mockOutreachRepo.findSequenceByLeadId.mockResolvedValue({ id: 'seq-1', status: 'STOPPED' });
 
       await service.handleInboundEmail({
         to: 'reply+lead-abc123@outreach.example.com',

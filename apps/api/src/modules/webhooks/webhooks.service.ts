@@ -37,14 +37,12 @@ export class WebhooksService {
     }
 
     const sequence = sequences[0];
-    const seq = await this.outreachRepo.findSequenceByLeadId(leadId, sequence.tenantId);
-
-    if (!seq || seq.status === SequenceStatus.STOPPED || seq.status === SequenceStatus.COMPLETED) {
+    if (sequence.status === SequenceStatus.STOPPED || sequence.status === SequenceStatus.COMPLETED) {
       this.logger.log(`Sequence for lead ${leadId} already inactive — ignoring reply`);
       return;
     }
 
-    await this.outreachRepo.updateSequence(seq.id, {
+    await this.outreachRepo.updateSequence(sequence.id, {
       status: SequenceStatus.STOPPED,
       stoppedAt: new Date(),
     });
