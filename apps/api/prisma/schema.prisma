@@ -5,3 +5,295 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companies  Company[]
+  contacts   Contact[]
+  leads      Lead[]
+  activities Activity[]
+}
+
+model Company {
+  id            String   @id @default(uuid())
+  tenantId      String
+  apolloId      String?  @unique
+  name          String
+  website       String?
+  industry      String?
+  teamSize      String?
+  fundingStage  String?
+  fundingAmount Float?
+  techStack     String[]
+  location      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  organization Organization @relation(fields: [tenantId], references: [id])
+  contacts     Contact[]
+  leads        Lead[]
+
+  @@index([tenantId])
+  @@index([name])
+}
+
+model Contact {
+  id          String   @id @default(uuid())
+  tenantId    String
+  companyId   String
+  apolloId    String?  @unique
+  firstName   String
+  lastName    String
+  email       String?
+  linkedinUrl String?
+  title       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  organization Organization @relation(fields: [tenantId], references: [id])
+  company      Company      @relation(fields: [companyId], references: [id])
+  leads        Lead[]
+
+  @@index([tenantId])
+  @@index([companyId])
+  @@index([email])
+}
+
+model Lead {
+  id            String     @id @default(uuid())
+  tenantId      String
+  contactId     String
+  companyId     String
+  status        LeadStatus @default(NEW)
+  score         Int?
+  priority      Priority?
+  scoreReasons  String[]
+  hiringSignals Json?
+  source        String     @default("apollo")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  organization  Organization     @relation(fields: [tenantId], references: [id])
+  contact       Contact          @relation(fields: [contactId], references: [id])
+  company       Company          @relation(fields: [companyId], references: [id])
+  activities    Activity[]
+  opportunities Opportunity[]
+  meetings      Meeting[]
+  sequences     OutreachSequence[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([priority])
+}
+
+enum LeadStatus {
+  NEW
+  SCORING
+  SCORED
+  OUTREACH_PENDING_APPROVAL
+  OUTREACH_APPROVED
+  OUTREACH_SENT
+  REPLIED
+  MEETING_BOOKED
+  PROPOSAL_SENT
+  CONVERTED
+  DISQUALIFIED
+}
+
+enum Priority {
+  HOT
+  WARM
+  COLD
+}
+
+model Activity {
+  id           String       @id @default(uuid())
+  tenantId     String
+  leadId       String?
+  type         ActivityType
+  description  String
+  metadata     Json?
+  createdAt    DateTime     @default(now())
+
+  organization Organization @relation(fields: [tenantId], references: [id])
+  lead         Lead?        @relation(fields: [leadId], references: [id])
+
+  @@index([tenantId])
+  @@index([leadId])
+}
+
+enum ActivityType {
+  LEAD_CREATED
+  SCORE_CALCULATED
+  EMAIL_SENT
+  EMAIL_OPENED
+  EMAIL_REPLIED
+  MEETING_BOOKED
+  MEETING_COMPLETED
+  PROPOSAL_SENT
+  NOTE_ADDED
+  STATUS_CHANGED
+}
+
+model Opportunity {
+  id          String           @id @default(uuid())
+  tenantId    String
+  leadId      String
+  title       String
+  value       Float?
+  stage       OpportunityStage @default(DISCOVERY)
+  closeDate   DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  lead      Lead       @relation(fields: [leadId], references: [id])
+  proposals Proposal[]
+  meetings  Meeting[]
+
+  @@index([tenantId])
+}
+
+enum OpportunityStage {
+  DISCOVERY
+  PROPOSAL_SENT
+  NEGOTIATION
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+model Meeting {
+  id            String        @id @default(uuid())
+  tenantId      String
+  leadId        String
+  opportunityId String?
+  calComEventId String?
+  scheduledAt   DateTime
+  durationMins  Int
+  status        MeetingStatus @default(SCHEDULED)
+  notes         String?
+  createdAt     DateTime      @default(now())
+
+  lead        Lead         @relation(fields: [leadId], references: [id])
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
+
+  @@index([tenantId])
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+model Proposal {
+  id            String         @id @default(uuid())
+  tenantId      String
+  opportunityId String
+  title         String
+  content       Json
+  pdfUrl        String?
+  status        ProposalStatus @default(DRAFT)
+  sentAt        DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id])
+
+  @@index([tenantId])
+}
+
+enum ProposalStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  REJECTED
+}
+
+model OutreachSequence {
+  id           String         @id @default(uuid())
+  tenantId     String
+  leadId       String         @unique
+  sequenceType String
+  currentStep  Int            @default(0)
+  status       SequenceStatus @default(ACTIVE)
+  startedAt    DateTime       @default(now())
+  stoppedAt    DateTime?
+
+  lead  Lead           @relation(fields: [leadId], references: [id])
+  steps OutreachStep[]
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+enum SequenceStatus {
+  ACTIVE
+  PAUSED
+  STOPPED
+  COMPLETED
+}
+
+model OutreachStep {
+  id          String     @id @default(uuid())
+  sequenceId  String
+  stepNumber  Int
+  scheduledAt DateTime
+  sentAt      DateTime?
+  subject     String?
+  body        String?
+  status      StepStatus @default(PENDING)
+  messageId   String?
+  openedAt    DateTime?
+
+  sequence OutreachSequence @relation(fields: [sequenceId], references: [id])
+
+  @@index([sequenceId])
+  @@index([scheduledAt])
+}
+
+enum StepStatus {
+  PENDING
+  PENDING_APPROVAL
+  APPROVED
+  SENT
+  OPENED
+  REPLIED
+  BOUNCED
+  FAILED
+}
+
+model CaseStudy {
+  id        String   @id @default(uuid())
+  tenantId  String
+  title     String
+  client    String
+  industry  String?
+  techStack String[]
+  challenge String
+  solution  String
+  result    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+}
+
+model RateCard {
+  id             String   @id @default(uuid())
+  tenantId       String
+  role           String
+  seniorityLevel String
+  monthlyRate    Float
+  hourlyRate     Float
+  currency       String   @default("USD")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([tenantId])
+}
