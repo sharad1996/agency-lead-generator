@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { OutreachSequence, OutreachStep, StepStatus } from '@prisma/client';
+import { OutreachSequence, OutreachStep, SequenceStatus, StepStatus } from '@prisma/client';
 
 export interface CreateSequenceDto {
   tenantId: string;
@@ -20,7 +20,12 @@ export interface CreateStepDto {
 
 export type OutreachStepWithSequence = OutreachStep & {
   sequence: OutreachSequence & {
-    lead: { id: string; tenantId: string; contact: { firstName: string; lastName: string; email: string; title: string | null }; company: { name: string; website: string | null } };
+    lead: {
+      id: string;
+      tenantId: string;
+      contact: { firstName: string; lastName: string; email: string; title: string | null };
+      company: { name: string; website: string | null };
+    };
   };
 };
 

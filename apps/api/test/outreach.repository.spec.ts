@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { StepStatus } from '@prisma/client';
 import { OutreachRepository } from '../src/modules/outreach/outreach.repository';
 import { PrismaService } from '../src/prisma/prisma.service';
 
@@ -54,14 +55,13 @@ describe('OutreachRepository', () => {
 
   describe('createSteps', () => {
     it('bulk-creates steps', async () => {
-      mockPrisma.outreachStep.createMany.mockResolvedValue({ count: 4 });
-
-      await repo.createSteps([
-        { sequenceId: 'seq-1', tenantId: 'org-1', stepNumber: 1, scheduledAt: new Date(), status: 'PENDING_APPROVAL' },
-        { sequenceId: 'seq-1', tenantId: 'org-1', stepNumber: 2, scheduledAt: new Date(), status: 'PENDING' },
-      ]);
-
-      expect(mockPrisma.outreachStep.createMany).toHaveBeenCalled();
+      mockPrisma.outreachStep.createMany.mockResolvedValue({ count: 2 });
+      const steps = [
+        { sequenceId: 'seq-1', tenantId: 'org-1', stepNumber: 1, scheduledAt: new Date(), status: 'PENDING_APPROVAL' as const },
+        { sequenceId: 'seq-1', tenantId: 'org-1', stepNumber: 2, scheduledAt: new Date(), status: 'PENDING' as const },
+      ];
+      await repo.createSteps(steps);
+      expect(mockPrisma.outreachStep.createMany).toHaveBeenCalledWith({ data: steps });
     });
   });
 
@@ -71,7 +71,7 @@ describe('OutreachRepository', () => {
       await repo.findPendingApprovalSteps('org-1');
       expect(mockPrisma.outreachStep.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          where: expect.objectContaining({ status: 'PENDING_APPROVAL', tenantId: 'org-1' }),
+          where: expect.objectContaining({ status: StepStatus.PENDING_APPROVAL, tenantId: 'org-1' }),
         }),
       );
     });
