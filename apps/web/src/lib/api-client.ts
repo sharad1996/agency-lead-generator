@@ -58,3 +58,37 @@ export async function triggerDiscovery(limit = 50): Promise<{ jobId: string; mes
   if (!res.ok) throw new Error('Failed to trigger discovery');
   return res.json() as Promise<{ jobId: string; message: string }>;
 }
+
+export interface PendingApproval {
+  stepId: string;
+  leadId: string;
+  contactName: string;
+  contactEmail: string;
+  contactTitle: string | null;
+  companyName: string;
+  subject: string;
+  body: string;
+  scheduledAt: string;
+}
+
+const ORG_ID = process.env.NEXT_PUBLIC_ORG_ID ?? '00000000-0000-0000-0000-000000000001';
+
+export async function fetchPendingApprovals(): Promise<PendingApproval[]> {
+  const res = await fetch(`${API_BASE}/approvals?tenantId=${ORG_ID}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Failed to fetch approvals');
+  return res.json() as Promise<PendingApproval[]>;
+}
+
+export async function approveStep(stepId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/approvals/${stepId}/approve?tenantId=${ORG_ID}`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error('Failed to approve step');
+}
+
+export async function rejectStep(stepId: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/approvals/${stepId}/reject?tenantId=${ORG_ID}`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error('Failed to reject step');
+}

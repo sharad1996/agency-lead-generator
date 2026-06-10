@@ -10,6 +10,28 @@ import {
 import { ScoreBadge } from './score-badge';
 import { Badge } from '@/components/ui/badge';
 
+function StatusBadge({ status }: { status: string }) {
+  const colors: Record<string, string> = {
+    NEW: 'bg-gray-100 text-gray-700',
+    SCORING: 'bg-yellow-100 text-yellow-700',
+    SCORED: 'bg-blue-100 text-blue-700',
+    OUTREACH_PENDING_APPROVAL: 'bg-orange-100 text-orange-700',
+    OUTREACH_APPROVED: 'bg-indigo-100 text-indigo-700',
+    OUTREACH_SENT: 'bg-purple-100 text-purple-700',
+    REPLIED: 'bg-green-100 text-green-700',
+    MEETING_BOOKED: 'bg-teal-100 text-teal-700',
+    DISQUALIFIED: 'bg-red-100 text-red-700',
+    CONVERTED: 'bg-emerald-100 text-emerald-700',
+  };
+  const label = status.replace(/_/g, ' ');
+  const cls = colors[status] ?? 'bg-gray-100 text-gray-700';
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${cls}`}>
+      {label}
+    </span>
+  );
+}
+
 interface LeadsTableProps {
   leads: Lead[];
 }
@@ -79,9 +101,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
               <ScoreBadge score={lead.score} priority={lead.priority} />
             </TableCell>
             <TableCell>
-              <Badge variant="outline" className="text-xs capitalize">
-                {lead.status.toLowerCase().replace(/_/g, ' ')}
-              </Badge>
+              <StatusBadge status={lead.status} />
             </TableCell>
             <TableCell className="text-sm capitalize text-gray-500">
               {lead.source}
