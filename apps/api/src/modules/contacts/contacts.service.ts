@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { ContactsRepository, UpsertContactDto } from './contacts.repository';
+import { ContactsRepository } from './contacts.repository';
+import { UpsertContactDto } from './dto/upsert-contact.dto';
 import { Contact } from '@prisma/client';
 
 @Injectable()
