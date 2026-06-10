@@ -103,4 +103,28 @@ describe('LeadOutreachProcessor', () => {
     await processor.process({ data: { leadId: 'missing' } } as any);
     expect(mockSequenceService.createForLead).not.toHaveBeenCalled();
   });
+
+  it('schedules follow-up jobs with { stepId } for each pending step', async () => {
+    mockPrisma.lead.findUnique.mockResolvedValue(mockLead);
+    mockOutreachRepo.countSentToday.mockResolvedValue(0);
+    mockSequenceService.createForLead.mockResolvedValue({
+      sequenceId: 'seq-1',
+      firstStepId: 'step-1',
+      firstStepNeedsApproval: false,
+    });
+    mockSendGrid.sendEmail.mockResolvedValue('msg-1');
+    mockOutreachRepo.findPendingStepsBySequenceId.mockResolvedValue([
+      { id: 'step-2', stepNumber: 2 },
+      { id: 'step-3', stepNumber: 3 },
+    ]);
+
+    await processor.process({ data: { leadId: 'lead-1' } } as any);
+
+    expect(mockFollowupQueue.add).toHaveBeenCalledWith(
+      'send-followup',
+      { stepId: 'step-2' },
+      expect.objectContaining({ delay: expect.any(Number) }),
+    );
+    expect(mockFollowupQueue.add).toHaveBeenCalledTimes(2);
+  });
 });

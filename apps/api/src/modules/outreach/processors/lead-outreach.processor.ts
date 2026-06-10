@@ -3,7 +3,7 @@ import { Job, Queue } from 'bullmq';
 import { Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { LeadsRepository } from '../../leads/leads.repository';
-import { LeadStatus, StepStatus } from '@prisma/client';
+import { LeadStatus, StepStatus, Priority } from '@prisma/client';
 import { SequenceService, SEQUENCE_DAYS } from '../sequence.service';
 import { SendGridService } from '../sendgrid.service';
 import { OutreachRepository } from '../outreach.repository';
@@ -75,16 +75,21 @@ export class LeadOutreachProcessor extends WorkerHost {
       return;
     }
 
-    await this.sendStep(result.firstStepId, lead.contact.email!, leadId, result.sequenceId, lead.tenantId, lead.priority!);
+    if (!lead.contact.email) {
+      this.logger.warn(`Lead ${leadId} has no email — skipping send`);
+      return;
+    }
+
+    await this.sendStep(result.firstStepId, lead.contact.email, leadId, result.sequenceId, lead.tenantId, lead.priority!);
   }
 
-  async sendStep(
+  private async sendStep(
     stepId: string,
     toEmail: string,
     leadId: string,
     sequenceId: string,
     tenantId: string,
-    priority: string,
+    priority: Priority,
   ): Promise<void> {
     const step = await this.outreachRepo.findStepById(stepId);
     if (!step || !step.subject || !step.body) {
@@ -109,7 +114,7 @@ export class LeadOutreachProcessor extends WorkerHost {
     await this.leadsRepo.updateStatus(leadId, LeadStatus.OUTREACH_SENT);
 
     // Schedule follow-up steps using their actual stepIds (aligned with LeadFollowupProcessor)
-    const days = SEQUENCE_DAYS[priority as 'HOT' | 'STANDARD'] ?? SEQUENCE_DAYS.STANDARD;
+    const days = SEQUENCE_DAYS[priority] ?? SEQUENCE_DAYS.STANDARD;
     const pendingSteps = await this.outreachRepo.findPendingStepsBySequenceId(sequenceId);
     for (const pending of pendingSteps) {
       const dayOffset = days[pending.stepNumber - 1] ?? 0;
