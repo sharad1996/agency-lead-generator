@@ -7,7 +7,10 @@ import { QUEUES } from '../../queue/queue.constants';
 
 @Module({
   imports: [
-    BullModule.registerQueue({ name: QUEUES.LEAD_SCORING }),
+    BullModule.registerQueue(
+      { name: QUEUES.LEAD_SCORING },
+      { name: QUEUES.OUTREACH },
+    ),
     LeadsModule,
   ],
   providers: [ScoringService, LeadScoringProcessor],
