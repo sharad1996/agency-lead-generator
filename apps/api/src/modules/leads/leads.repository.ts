@@ -85,8 +85,8 @@ export class LeadsRepository {
   }
 
   async countCreatedToday(tenantId: string): Promise<number> {
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+    const now = new Date();
+    const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     return this.prisma.lead.count({
       where: {
         tenantId,
