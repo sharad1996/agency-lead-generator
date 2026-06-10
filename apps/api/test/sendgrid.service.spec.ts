@@ -40,7 +40,7 @@ describe('SendGridService', () => {
         to: 'alice@example.com',
         leadId: 'lead-1',
         subject: 'Hello',
-        body: 'Hi there',
+        body: 'Hi there\nSecond line',
       });
 
       expect(mockSendGrid.send).toHaveBeenCalledWith(
@@ -49,6 +49,8 @@ describe('SendGridService', () => {
           from: { email: 'outreach@example.com', name: 'Sharad' },
           subject: 'Hello',
           replyTo: 'reply+lead-1@outreach.example.com',
+          html: 'Hi there<br>Second line',
+          text: 'Hi there\nSecond line',
         }),
       );
       expect(messageId).toBe('msg-abc');
