@@ -5,7 +5,6 @@ import { SequenceStatus, StepStatus } from '@prisma/client';
 import { OutreachRepository } from '../outreach.repository';
 import { OutreachService } from '../outreach.service';
 import { SendGridService } from '../sendgrid.service';
-import { LeadsRepository } from '../../leads/leads.repository';
 import { QUEUES } from '../../../queue/queue.constants';
 import { DAILY_EMAIL_LIMIT } from '../outreach.constants';
 import { SEQUENCE_DAYS } from '../sequence.service';
@@ -22,7 +21,6 @@ export class LeadFollowupProcessor extends WorkerHost {
     private readonly outreachRepo: OutreachRepository,
     private readonly outreachService: OutreachService,
     private readonly sendGrid: SendGridService,
-    private readonly leadsRepo: LeadsRepository,
     @InjectQueue(QUEUES.FOLLOWUP) private readonly followupQueue: Queue,
   ) {
     super();
@@ -51,6 +49,11 @@ export class LeadFollowupProcessor extends WorkerHost {
       return;
     }
 
+    if (!lead.contact.email) {
+      this.logger.warn(`Lead ${lead.id} has no email — skipping followup step ${stepId}`);
+      return;
+    }
+
     const step1 = await this.outreachRepo.findFirstStepOfSequence(step.sequence.id);
     const previousSubject = step1?.subject ?? 'our services';
 
@@ -60,11 +63,6 @@ export class LeadFollowupProcessor extends WorkerHost {
       stepNumber: step.stepNumber,
       previousSubject,
     });
-
-    if (!lead.contact.email) {
-      this.logger.warn(`Lead ${lead.id} has no email — skipping followup step ${stepId}`);
-      return;
-    }
 
     const messageId = await this.sendGrid.sendEmail({
       to: lead.contact.email,

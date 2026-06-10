@@ -4,7 +4,6 @@ import { LeadFollowupProcessor } from '../src/modules/outreach/processors/lead-f
 import { OutreachRepository } from '../src/modules/outreach/outreach.repository';
 import { OutreachService } from '../src/modules/outreach/outreach.service';
 import { SendGridService } from '../src/modules/outreach/sendgrid.service';
-import { LeadsRepository } from '../src/modules/leads/leads.repository';
 import { QUEUES } from '../src/queue/queue.constants';
 
 const mockOutreachRepo = {
@@ -16,7 +15,6 @@ const mockOutreachRepo = {
 };
 const mockOutreachService = { generateFollowupEmail: jest.fn() };
 const mockSendGrid = { sendEmail: jest.fn() };
-const mockLeadsRepo = { updateStatus: jest.fn() };
 
 const mockStep = {
   id: 'step-2',
@@ -49,7 +47,6 @@ describe('LeadFollowupProcessor', () => {
         { provide: OutreachRepository, useValue: mockOutreachRepo },
         { provide: OutreachService, useValue: mockOutreachService },
         { provide: SendGridService, useValue: mockSendGrid },
-        { provide: LeadsRepository, useValue: mockLeadsRepo },
         { provide: getQueueToken(QUEUES.FOLLOWUP), useValue: {} },
       ],
     }).compile();
