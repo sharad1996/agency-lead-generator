@@ -12,6 +12,8 @@ describe('OutreachService', () => {
   let mockCreate: jest.Mock;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
+
     mockCreate = jest.fn();
 
     (OpenAI as jest.MockedClass<typeof OpenAI>).mockImplementation(
@@ -28,7 +30,6 @@ describe('OutreachService', () => {
       ],
     }).compile();
     service = module.get(OutreachService);
-    jest.clearAllMocks();
   });
 
   describe('generateColdEmail', () => {
@@ -80,6 +81,9 @@ describe('OutreachService', () => {
 
       expect(result.subject).toBe('Re: following up');
       expect(result.body).toBe('Hey Alice');
+      expect(mockCreate).toHaveBeenCalledWith(
+        expect.objectContaining({ model: 'gpt-4o-mini', temperature: 0.7 }),
+      );
     });
   });
 });
