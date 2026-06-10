@@ -12,10 +12,16 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  companies  Company[]
-  contacts   Contact[]
-  leads      Lead[]
-  activities Activity[]
+  companies    Company[]
+  contacts     Contact[]
+  leads        Lead[]
+  activities   Activity[]
+  opportunities Opportunity[]
+  meetings     Meeting[]
+  proposals    Proposal[]
+  sequences    OutreachSequence[]
+  caseStudies  CaseStudy[]
+  rateCards    RateCard[]
 }
 
 model Company {
@@ -33,7 +39,7 @@ model Company {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  organization Organization @relation(fields: [tenantId], references: [id])
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   contacts     Contact[]
   leads        Lead[]
 
@@ -54,13 +60,13 @@ model Contact {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  organization Organization @relation(fields: [tenantId], references: [id])
-  company      Company      @relation(fields: [companyId], references: [id])
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  company      Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
   leads        Lead[]
 
   @@index([tenantId])
   @@index([companyId])
-  @@index([email])
+  @@unique([tenantId, email])
 }
 
 model Lead {
@@ -77,9 +83,9 @@ model Lead {
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
-  organization  Organization     @relation(fields: [tenantId], references: [id])
-  contact       Contact          @relation(fields: [contactId], references: [id])
-  company       Company          @relation(fields: [companyId], references: [id])
+  organization  Organization       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contact       Contact            @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  company       Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   activities    Activity[]
   opportunities Opportunity[]
   meetings      Meeting[]
@@ -119,8 +125,8 @@ model Activity {
   metadata     Json?
   createdAt    DateTime     @default(now())
 
-  organization Organization @relation(fields: [tenantId], references: [id])
-  lead         Lead?        @relation(fields: [leadId], references: [id])
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lead         Lead?        @relation(fields: [leadId], references: [id], onDelete: SetNull)
 
   @@index([tenantId])
   @@index([leadId])
@@ -150,9 +156,10 @@ model Opportunity {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
-  lead      Lead       @relation(fields: [leadId], references: [id])
-  proposals Proposal[]
-  meetings  Meeting[]
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lead         Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  proposals    Proposal[]
+  meetings     Meeting[]
 
   @@index([tenantId])
 }
@@ -177,10 +184,12 @@ model Meeting {
   notes         String?
   createdAt     DateTime      @default(now())
 
-  lead        Lead         @relation(fields: [leadId], references: [id])
-  opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lead         Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  opportunity  Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
 
   @@index([tenantId])
+  @@index([scheduledAt])
 }
 
 enum MeetingStatus {
@@ -202,7 +211,8 @@ model Proposal {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
-  opportunity Opportunity @relation(fields: [opportunityId], references: [id])
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  opportunity  Opportunity  @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
 }
@@ -225,8 +235,9 @@ model OutreachSequence {
   startedAt    DateTime       @default(now())
   stoppedAt    DateTime?
 
-  lead  Lead           @relation(fields: [leadId], references: [id])
-  steps OutreachStep[]
+  organization Organization   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lead         Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  steps        OutreachStep[]
 
   @@index([tenantId])
   @@index([status])
@@ -242,6 +253,7 @@ enum SequenceStatus {
 model OutreachStep {
   id          String     @id @default(uuid())
   sequenceId  String
+  tenantId    String
   stepNumber  Int
   scheduledAt DateTime
   sentAt      DateTime?
@@ -251,10 +263,11 @@ model OutreachStep {
   messageId   String?
   openedAt    DateTime?
 
-  sequence OutreachSequence @relation(fields: [sequenceId], references: [id])
+  sequence OutreachSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
 
   @@index([sequenceId])
   @@index([scheduledAt])
+  @@index([tenantId])
 }
 
 enum StepStatus {
@@ -281,6 +294,8 @@ model CaseStudy {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   @@index([tenantId])
 }
 
@@ -295,5 +310,8 @@ model RateCard {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
   @@index([tenantId])
+  @@unique([tenantId, role, seniorityLevel])
 }
