@@ -5,6 +5,7 @@ import { QueueModule } from './queue/queue.module';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { LeadsModule } from './modules/leads/leads.module';
+import { DiscoveryModule } from './modules/discovery/discovery.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { LeadsModule } from './modules/leads/leads.module';
     CompaniesModule,
     ContactsModule,
     LeadsModule,
+    DiscoveryModule,
   ],
 })
 export class AppModule {}
