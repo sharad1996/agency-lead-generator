@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Priority } from '@prisma/client';
 import { SequenceService, SEQUENCE_DAYS } from '../src/modules/outreach/sequence.service';
 import { OutreachRepository } from '../src/modules/outreach/outreach.repository';
 import { OutreachService } from '../src/modules/outreach/outreach.service';
@@ -67,6 +68,7 @@ describe('SequenceService', () => {
       );
       const steps = mockRepo.createSteps.mock.calls[0][0];
       expect(steps).toHaveLength(4);
+      expect(steps[0].sequenceId).toBe('seq-1');
       expect(result.sequenceId).toBe('seq-1');
     });
 
@@ -102,7 +104,7 @@ describe('SequenceService', () => {
       mockRepo.createSteps.mockResolvedValue(undefined);
       mockOutreachService.generateColdEmail.mockResolvedValue({ subject: 'Hi', body: 'Hello' });
 
-      await service.createForLead({ ...input, priority: 'WARM' });
+      await service.createForLead({ ...input, priority: Priority.WARM });
 
       expect(mockRepo.createSequence).toHaveBeenCalledWith(
         expect.objectContaining({ sequenceType: 'STANDARD' }),

@@ -72,10 +72,12 @@ export class SequenceService {
     await this.outreachRepo.createSteps(steps);
 
     const firstStep = await this.outreachRepo.findFirstStepOfSequence(sequence.id);
-
+    if (!firstStep) {
+      throw new Error(`Step creation failed for sequence ${sequence.id}`);
+    }
     return {
       sequenceId: sequence.id,
-      firstStepId: firstStep!.id,
+      firstStepId: firstStep.id,
       firstStepNeedsApproval: firstBatch,
     };
   }
