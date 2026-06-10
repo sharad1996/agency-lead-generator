@@ -52,6 +52,11 @@ export class ApprovalService {
       throw new NotFoundException(`Step ${stepId} not found`);
     }
 
+    if (step.status !== StepStatus.PENDING_APPROVAL) {
+      this.logger.warn(`Step ${stepId} is already ${step.status} — skipping re-approval`);
+      return;
+    }
+
     const { lead } = step.sequence;
 
     if (!lead.contact.email) {

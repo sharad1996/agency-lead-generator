@@ -20,6 +20,7 @@ const mockFollowupQueue = { add: jest.fn() };
 
 const approvalStep = {
   id: 'step-1',
+  status: 'PENDING_APPROVAL',
   subject: 'Hello Alice',
   body: 'We help with React dev',
   stepNumber: 1,
@@ -101,6 +102,14 @@ describe('ApprovalService', () => {
         expect.objectContaining({ delay: expect.any(Number) }),
       );
       expect(mockFollowupQueue.add).toHaveBeenCalledTimes(3);
+    });
+
+    it('skips re-approval when step is already SENT', async () => {
+      mockOutreachRepo.findStepById.mockResolvedValue({ ...approvalStep, status: 'SENT' });
+
+      await service.approve('step-1', 'org-1');
+
+      expect(mockSendGrid.sendEmail).not.toHaveBeenCalled();
     });
 
     it('throws NotFoundException when step not found', async () => {
