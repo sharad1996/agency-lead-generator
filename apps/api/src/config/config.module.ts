@@ -13,6 +13,12 @@ import * as Joi from 'joi';
         APOLLO_API_KEY: Joi.string().required(),
         OPENAI_API_KEY: Joi.string().required(),
         ANTHROPIC_API_KEY: Joi.string().required(),
+        SENDGRID_API_KEY: Joi.string().required(),
+        FROM_EMAIL: Joi.string().email().required(),
+        FROM_NAME: Joi.string().required(),
+        OUTREACH_DOMAIN: Joi.string().required(),
+        SENDGRID_WEBHOOK_SECRET: Joi.string().optional(),
+        CAL_COM_WEBHOOK_SECRET: Joi.string().optional(),
         PORT: Joi.number().default(3001),
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'test')

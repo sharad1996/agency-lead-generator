@@ -1,5 +1,5 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Job } from 'bullmq';
+import { Processor, WorkerHost, InjectQueue } from '@nestjs/bullmq';
+import { Job, Queue } from 'bullmq';
 import { Logger } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { LeadsRepository } from '../../leads/leads.repository';
@@ -19,6 +19,7 @@ export class LeadScoringProcessor extends WorkerHost {
     private readonly prisma: PrismaService,
     private readonly leadsRepo: LeadsRepository,
     private readonly scoringService: ScoringService,
+    @InjectQueue(QUEUES.OUTREACH) private readonly outreachQueue: Queue,
   ) {
     super();
   }
@@ -59,8 +60,7 @@ export class LeadScoringProcessor extends WorkerHost {
       scoreReasons: result.reasons,
     });
 
-    this.logger.log(
-      `Scored lead ${leadId}: score=${result.score} priority=${result.priority}`,
-    );
+    await this.outreachQueue.add('create-sequence', { leadId });
+    this.logger.log(`Lead ${leadId} scored — enqueued for outreach`);
   }
 }

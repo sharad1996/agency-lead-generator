@@ -22,6 +22,8 @@ import { QUEUES } from './queue.constants';
     BullModule.registerQueue(
       { name: QUEUES.LEAD_DISCOVERY },
       { name: QUEUES.LEAD_SCORING },
+      { name: QUEUES.OUTREACH },
+      { name: QUEUES.FOLLOWUP },
     ),
   ],
   exports: [BullModule],
