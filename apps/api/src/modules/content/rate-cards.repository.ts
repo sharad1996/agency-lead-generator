@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { RateCard } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -44,6 +44,13 @@ export class RateCardsRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.rateCard.delete({ where: { id } });
+    try {
+      await this.prisma.rateCard.delete({ where: { id } });
+    } catch (err: unknown) {
+      if ((err as { code?: string }).code === 'P2025') {
+        throw new NotFoundException(`RateCard ${id} not found`);
+      }
+      throw err;
+    }
   }
 }
