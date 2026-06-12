@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Delete, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, Query, BadRequestException, HttpCode, HttpStatus } from '@nestjs/common';
 import { RateCardsRepository } from './rate-cards.repository';
 import type { UpsertRateCardDto } from './rate-cards.repository';
 
@@ -8,6 +8,7 @@ export class RateCardsController {
 
   @Get()
   findAll(@Query('tenantId') tenantId: string) {
+    if (!tenantId) throw new BadRequestException('tenantId is required');
     return this.repo.findAll(tenantId);
   }
 
@@ -17,6 +18,7 @@ export class RateCardsController {
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   delete(@Param('id') id: string) {
     return this.repo.delete(id);
   }

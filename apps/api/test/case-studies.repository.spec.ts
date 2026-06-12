@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CaseStudiesRepository } from '../src/modules/content/case-studies.repository';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -88,6 +89,12 @@ describe('CaseStudiesRepository', () => {
       mockPrisma.caseStudy.delete.mockResolvedValue(mockCaseStudy);
       await repo.delete('cs-1');
       expect(mockPrisma.caseStudy.delete).toHaveBeenCalledWith({ where: { id: 'cs-1' } });
+    });
+
+    it('throws NotFoundException when record does not exist', async () => {
+      const p2025 = Object.assign(new Error('Not found'), { code: 'P2025' });
+      mockPrisma.caseStudy.delete.mockRejectedValue(p2025);
+      await expect(repo.delete('nonexistent')).rejects.toThrow(NotFoundException);
     });
   });
 });
