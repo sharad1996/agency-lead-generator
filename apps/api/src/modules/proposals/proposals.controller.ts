@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Query, Body, Res, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Body, Res, NotFoundException, BadRequestException } from '@nestjs/common';
 import type { Response } from 'express';
 import { ProposalsService } from './proposals.service';
 import { ProposalsRepository } from './proposals.repository';
@@ -16,6 +16,7 @@ export class ProposalsController {
 
   @Get()
   findAll(@Query('tenantId') tenantId: string) {
+    if (!tenantId) throw new BadRequestException('tenantId is required');
     return this.proposalsRepo.findAll(tenantId);
   }
 
