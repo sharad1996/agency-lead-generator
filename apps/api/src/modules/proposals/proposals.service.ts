@@ -48,6 +48,10 @@ export class ProposalsService {
     if (!opportunity) throw new NotFoundException(`Opportunity ${input.opportunityId} not found`);
 
     const { lead } = opportunity;
+    if (!lead.contact || !lead.company) {
+      throw new NotFoundException(`Lead is missing contact or company data`);
+    }
+
     const [caseStudies, rateCards] = await Promise.all([
       this.caseStudiesRepo.findRelevant(opportunity.tenantId, {
         industry: lead.company.industry,
@@ -90,10 +94,14 @@ export class ProposalsService {
   private parseContent(text: string): ProposalContent {
     try {
       const parsed = JSON.parse(text) as ProposalContent;
-      if (!parsed.executiveSummary || !parsed.proposedSolution) throw new Error('missing fields');
+      const required: (keyof ProposalContent)[] = [
+        'executiveSummary', 'proposedSolution', 'techStack',
+        'timeline', 'teamComposition', 'investment', 'whyUs',
+      ];
+      if (required.some((k) => !parsed[k])) throw new Error('missing fields');
       return parsed;
-    } catch {
-      this.logger.error(`Invalid proposal generation response: ${text.slice(0, 200)}`);
+    } catch (err: unknown) {
+      this.logger.error(`Invalid proposal generation response: ${text.slice(0, 200)}`, (err as Error).stack);
       throw new Error('Invalid proposal generation response');
     }
   }

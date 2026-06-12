@@ -92,7 +92,13 @@ describe('ProposalsService', () => {
       expect(mockAnthropicCreate).toHaveBeenCalledWith(
         expect.objectContaining({ model: 'claude-haiku-4-5-20251001' }),
       );
-      expect(mockProposalsRepo.create).toHaveBeenCalled();
+      expect(mockProposalsRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tenantId: 'org-1',
+          opportunityId: 'opp-1',
+          content: mockGeneratedContent,
+        }),
+      );
       expect(result.id).toBe('prop-1');
     });
 
