@@ -10,6 +10,10 @@ import { ScoringModule } from './modules/scoring/scoring.module';
 import { OutreachModule } from './modules/outreach/outreach.module';
 import { ApprovalModule } from './modules/approval/approval.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
+import { MeetingsModule } from './modules/meetings/meetings.module';
+import { ContentModule } from './modules/content/content.module';
+import { ProposalsModule } from './modules/proposals/proposals.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -24,6 +28,10 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module';
     OutreachModule,
     ApprovalModule,
     WebhooksModule,
+    MeetingsModule,
+    ContentModule,
+    ProposalsModule,
+    DashboardModule,
   ],
 })
 export class AppModule {}
