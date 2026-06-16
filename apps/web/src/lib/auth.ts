@@ -23,8 +23,12 @@ export const authOptions: AuthOptions = {
     },
     async decode({ token }) {
       if (!token) return null;
-      const { payload } = await jwtVerify(token, secret);
-      return payload as Record<string, unknown>;
+      try {
+        const { payload } = await jwtVerify(token, secret);
+        return payload as Record<string, unknown>;
+      } catch {
+        return null;
+      }
     },
   },
   callbacks: {
@@ -51,8 +55,8 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      session.user.userId = token.userId as string;
-      session.user.role = token.role as string;
+      session.user.userId = token.userId ?? '';
+      session.user.role = token.role ?? 'MEMBER';
       return session;
     },
   },
