@@ -7,7 +7,6 @@ import {
   Param,
   Headers,
   UnauthorizedException,
-  Query,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserRole } from '@prisma/client';
@@ -39,8 +38,8 @@ export class UsersController {
 
   @Get()
   @Roles(UserRole.ADMIN)
-  listUsers(@Query('tenantId') tenantId: string) {
-    return this.usersService.listUsers(tenantId);
+  listUsers() {
+    return this.usersService.listUsers(this.config.get<string>('ORG_ID')!);
   }
 
   @Patch(':id/role')
