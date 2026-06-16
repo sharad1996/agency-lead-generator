@@ -19,6 +19,9 @@ import * as Joi from 'joi';
         OUTREACH_DOMAIN: Joi.string().required(),
         SENDGRID_WEBHOOK_SECRET: Joi.string().optional(),
         CAL_COM_WEBHOOK_SECRET: Joi.string().optional(),
+        NEXTAUTH_SECRET: Joi.string().required(),
+        INTERNAL_API_SECRET: Joi.string().required(),
+        ADMIN_EMAIL: Joi.string().email().required(),
         PORT: Joi.number().default(3001),
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'test')
