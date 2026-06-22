@@ -41,7 +41,7 @@ export class ApolloAdapter implements LeadSourceAdapter {
 
   async searchLeads(options: SearchOptions): Promise<RawLead[]> {
     const response = await axios.post<{ people: ApolloPerson[] }>(
-      `${this.baseUrl}/mixed_people/search`,
+      `${this.baseUrl}/mixed_people/api_search`,
       {
         api_key: this.apiKey,
         page: options.page ?? 1,
@@ -59,11 +59,11 @@ export class ApolloAdapter implements LeadSourceAdapter {
         organization_num_employees_ranges: ['1,500'],
       },
       {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': this.apiKey },
       },
     );
 
-    return response.data.people
+    return (response.data.people ?? [])
       .filter((p) => p.organization !== null)
       .map((p) => this.normalize(p));
   }
@@ -80,7 +80,7 @@ export class ApolloAdapter implements LeadSourceAdapter {
       contact: {
         apolloId: person.id,
         firstName: person.first_name,
-        lastName: person.last_name,
+        lastName: person.last_name?.trim() || '',
         email: person.email ?? undefined,
         linkedinUrl: person.linkedin_url ?? undefined,
         title: person.title,
@@ -92,7 +92,9 @@ export class ApolloAdapter implements LeadSourceAdapter {
         industry: org.industry ?? undefined,
         teamSize,
         fundingStage: org.funding_stage ?? undefined,
-        techStack: org.technologies.map((t) => t.name),
+        techStack: Array.isArray(org.technologies)
+          ? org.technologies.map((t) => t?.name).filter(Boolean)
+          : [],
         location: location || undefined,
       },
     };

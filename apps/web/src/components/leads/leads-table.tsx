@@ -53,7 +53,7 @@ export function LeadsTable({ leads }: LeadsTableProps) {
           <TableHead>Company</TableHead>
           <TableHead>Industry</TableHead>
           <TableHead>Tech Stack</TableHead>
-          <TableHead>Score</TableHead>
+          <TableHead>Priority Score</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Source</TableHead>
         </TableRow>

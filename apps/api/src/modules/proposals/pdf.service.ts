@@ -1,5 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import puppeteer from 'puppeteer';
 import { ProposalContent } from './prompts/proposal.prompt';
 
 @Injectable()
@@ -8,6 +7,7 @@ export class PdfService {
 
   async generateProposalPdf(title: string, content: ProposalContent): Promise<Buffer> {
     const html = this.buildHtml(title, content);
+    const puppeteer = (await import('puppeteer')).default;
 
     const browser = await puppeteer.launch({
       args: ['--no-sandbox', '--disable-setuid-sandbox'],

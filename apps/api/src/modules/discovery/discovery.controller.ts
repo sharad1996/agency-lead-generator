@@ -31,13 +31,21 @@ export class DiscoveryController {
     private readonly discoveryService: DiscoveryService,
     private readonly config: ConfigService,
     @InjectQueue(QUEUES.LEAD_DISCOVERY) private readonly discoveryQueue: Queue,
-  ) {}
+  ) { }
 
   @Post('trigger')
   @ApiOperation({ summary: 'Trigger Apollo lead discovery job (max 50 leads/day)' })
   async trigger(@Body() dto: TriggerDiscoveryDto) {
     const job = await this.discoveryQueue.add('discover', { limit: dto.limit });
     return { jobId: job.id, message: `Discovery job queued for up to ${dto.limit} leads` };
+  }
+
+  @Post('run')
+  @ApiOperation({ summary: 'Run Apollo discovery synchronously (debug only)' })
+  async runNow(@Body() dto: TriggerDiscoveryDto) {
+    const tenantId = this.config.get<string>('ORG_ID')!;
+    const result = await this.discoveryService.runDiscovery({ limit: dto.limit, tenantId });
+    return result;
   }
 
   @Post('import/csv')

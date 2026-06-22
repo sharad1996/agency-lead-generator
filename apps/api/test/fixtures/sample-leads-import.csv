@@ -1,0 +1,4 @@
+firstName,lastName,email,title,companyName,website,industry,techStack,location
+Alice,Chen,alice@techstartup.io,CTO,TechStartup Inc,https://techstartup.io,SaaS,"React,Node.js,TypeScript",Austin TX
+Bob,Smith,bob@growthapp.com,VP Engineering,GrowthApp,https://growthapp.com,SaaS,"Next.js,PostgreSQL",San Francisco CA
+Cara,Jones,cara@fintechlabs.com,Head of Product,Fintech Labs,https://fintechlabs.com,Fintech,"Python,Django,PostgreSQL",New York NY

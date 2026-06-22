@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache';
 async function triggerDiscoveryAction() {
   'use server';
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'}/discovery/trigger`,
+    `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'}/discovery/run`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

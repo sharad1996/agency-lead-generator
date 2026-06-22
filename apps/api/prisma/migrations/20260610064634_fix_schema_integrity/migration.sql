@@ -72,7 +72,9 @@ ALTER TABLE "RateCard" ADD CONSTRAINT "RateCard_tenantId_fkey" FOREIGN KEY ("ten
 
 -- Fix 3: Replace Contact email index with tenant-scoped unique constraint
 DROP INDEX "Contact_email_idx";
-CREATE UNIQUE INDEX "Contact_tenantId_email_key" ON "Contact"("tenantId", "email") NULLS NOT DISTINCT;
+-- CREATE UNIQUE INDEX "Contact_tenantId_email_key" ON "Contact"("tenantId", "email") NULLS NOT DISTINCT; # works in psql 15+, but not in 14, so we use the default behavior of NULLs being distinct
+CREATE UNIQUE INDEX "Contact_tenantId_email_key"
+ON "Contact"("tenantId", "email");
 
 -- Fix 4: Add tenantId to OutreachStep
 ALTER TABLE "OutreachStep" ADD COLUMN "tenantId" TEXT NOT NULL DEFAULT '';
