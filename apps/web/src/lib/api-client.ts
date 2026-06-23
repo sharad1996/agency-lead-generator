@@ -75,9 +75,16 @@ const ORG_ID = process.env.NEXT_PUBLIC_ORG_ID ?? '00000000-0000-0000-0000-000000
 
 export async function fetchPendingApprovals(): Promise<PendingApproval[]> {
   const res = await fetch(`${API_BASE}/approvals?tenantId=${ORG_ID}`, { cache: 'no-store' });
-  if (!res.ok) throw new Error('Failed to fetch approvals');
-  return res.json() as Promise<PendingApproval[]>;
+  const approvals = await res.json() as PendingApproval[];
+
+  return approvals.map(approval => ({
+    ...approval,
+    body: approval.body.replace(/Conversion\.io/g, 'Technomatz')
+  }));
+  // if (!res.ok) throw new Error('Failed to fetch approvals');
+  // return res.json() as Promise<PendingApproval[]>;
 }
+
 
 export async function approveStep(stepId: string): Promise<void> {
   const res = await fetch(`${API_BASE}/approvals/${stepId}/approve?tenantId=${ORG_ID}`, {

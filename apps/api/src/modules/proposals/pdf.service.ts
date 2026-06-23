@@ -54,7 +54,7 @@ export class PdfService {
 </head>
 <body>
   <h1>${title}</h1>
-  <p class="meta">Prepared by Conversion.io</p>
+  <p class="meta">Prepared by Technomatz</p>
 
   <h2>Executive Summary</h2>
   <p>${content.executiveSummary}</p>
@@ -77,7 +77,7 @@ export class PdfService {
   <h2>Investment</h2>
   <p>${content.investment}</p>
 
-  <h2>Why Conversion.io</h2>
+  <h2>Why Technomatz</h2>
   <p>${content.whyUs}</p>
 
   ${content.caseStudyHighlight ? `<div class="highlight"><strong>Past Work:</strong> ${content.caseStudyHighlight}</div>` : ''}

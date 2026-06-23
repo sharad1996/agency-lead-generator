@@ -37,7 +37,7 @@ export function buildProposalPrompt(input: ProposalPromptInput): string {
         .join('\n')}`
     : '';
 
-  return `You are a senior solutions consultant at Conversion.io, an IT services company specialising in React, Next.js, Node.js, NestJS, and TypeScript.
+  return `You are a senior solutions consultant at Technomatz, an IT services company specialising in React, Next.js, Node.js, NestJS, and TypeScript.
 
 Write a professional client proposal for:
 - Client: ${input.clientName} at ${input.companyName}${input.industry ? ` (${input.industry})` : ''}
@@ -58,7 +58,7 @@ Respond ONLY with valid JSON (no markdown, no code fences):
     { "role": "Frontend Developer", "seniority": "Senior", "count": 2, "monthlyRate": 8000 }
   ],
   "investment": "Total investment breakdown and final amount",
-  "whyUs": "2-3 sentences on why Conversion.io is the right partner",
+  "whyUs": "2-3 sentences on why Technomatz is the right partner",
   "caseStudyHighlight": "1-2 sentences referencing the most relevant past project, or null if none"
 }`;
 }

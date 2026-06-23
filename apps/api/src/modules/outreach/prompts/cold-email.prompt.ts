@@ -14,7 +14,7 @@ export function buildColdEmailPrompt(input: ColdEmailInput): string {
   const ind = input.industry ? ` (${input.industry})` : '';
   const title = input.title ? input.title : 'tech leader';
 
-  return `You are a senior sales rep at Conversion.io, an IT services company specialising in React, Next.js, Node.js, NestJS, and TypeScript.
+  return `You are a senior sales rep at Technomatz, an IT services company specialising in React, Next.js, Node.js, NestJS, and TypeScript.
 
 Write a cold outreach email to ${input.firstName} ${input.lastName}, ${title} at ${input.companyName}${ind}${loc}. Their tech stack includes ${stack}.
 

@@ -14,7 +14,7 @@ const FOLLOWUP_TONE: Record<number, string> = {
 export function buildFollowupEmailPrompt(input: FollowupEmailInput): string {
   const tone = FOLLOWUP_TONE[input.stepNumber] ?? FOLLOWUP_TONE[2];
 
-  return `You are a senior sales rep at Conversion.io.
+  return `You are a senior sales rep at Technomatz.
 
 Write follow-up email #${input.stepNumber - 1} to ${input.firstName} at ${input.companyName}. The original thread subject was "${input.previousSubject}".
 
