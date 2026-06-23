@@ -1,4 +1,16 @@
+import { cookies } from 'next/headers';
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+const ORG_ID = process.env.NEXT_PUBLIC_ORG_ID ?? '00000000-0000-0000-0000-000000000001';
+
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const cookieStore = await cookies();
+  const token =
+    cookieStore.get('next-auth.session-token')?.value ??
+    cookieStore.get('__Secure-next-auth.session-token')?.value;
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
+}
 
 export interface LeadContact {
   firstName: string;
@@ -44,7 +56,10 @@ export async function fetchLeads(params?: {
   if (params?.priority) query.set('priority', params.priority);
   if (params?.status) query.set('status', params.status);
 
-  const res = await fetch(`${API_BASE}/leads?${query}`, { cache: 'no-store' });
+  const res = await fetch(`${API_BASE}/leads?${query}`, {
+    cache: 'no-store',
+    headers: await getAuthHeaders(),
+  });
   if (!res.ok) throw new Error('Failed to fetch leads');
   return res.json() as Promise<LeadsResponse>;
 }
@@ -52,7 +67,7 @@ export async function fetchLeads(params?: {
 export async function triggerDiscovery(limit = 50): Promise<{ jobId: string; message: string }> {
   const res = await fetch(`${API_BASE}/discovery/trigger`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
     body: JSON.stringify({ limit }),
   });
   if (!res.ok) throw new Error('Failed to trigger discovery');
@@ -71,10 +86,11 @@ export interface PendingApproval {
   scheduledAt: string;
 }
 
-const ORG_ID = process.env.NEXT_PUBLIC_ORG_ID ?? '00000000-0000-0000-0000-000000000001';
-
 export async function fetchPendingApprovals(): Promise<PendingApproval[]> {
-  const res = await fetch(`${API_BASE}/approvals?tenantId=${ORG_ID}`, { cache: 'no-store' });
+  const res = await fetch(`${API_BASE}/approvals?tenantId=${ORG_ID}`, {
+    cache: 'no-store',
+    headers: await getAuthHeaders(),
+  });
   if (!res.ok) throw new Error('Failed to fetch approvals');
   return res.json() as Promise<PendingApproval[]>;
 }
@@ -82,6 +98,7 @@ export async function fetchPendingApprovals(): Promise<PendingApproval[]> {
 export async function approveStep(stepId: string): Promise<void> {
   const res = await fetch(`${API_BASE}/approvals/${stepId}/approve?tenantId=${ORG_ID}`, {
     method: 'POST',
+    headers: await getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to approve step');
 }
@@ -89,6 +106,7 @@ export async function approveStep(stepId: string): Promise<void> {
 export async function rejectStep(stepId: string): Promise<void> {
   const res = await fetch(`${API_BASE}/approvals/${stepId}/reject?tenantId=${ORG_ID}`, {
     method: 'POST',
+    headers: await getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to reject step');
 }
@@ -101,7 +119,10 @@ export interface DashboardMetrics {
 }
 
 export async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
-  const res = await fetch(`${API_BASE}/dashboard/metrics?tenantId=${ORG_ID}`, { cache: 'no-store' });
+  const res = await fetch(`${API_BASE}/dashboard/metrics?tenantId=${ORG_ID}`, {
+    cache: 'no-store',
+    headers: await getAuthHeaders(),
+  });
   if (!res.ok) throw new Error('Failed to fetch dashboard metrics');
   return res.json() as Promise<DashboardMetrics>;
 }
@@ -127,7 +148,10 @@ export interface RateCard {
 }
 
 export async function fetchCaseStudies(): Promise<CaseStudy[]> {
-  const res = await fetch(`${API_BASE}/case-studies?tenantId=${ORG_ID}`, { cache: 'no-store' });
+  const res = await fetch(`${API_BASE}/case-studies?tenantId=${ORG_ID}`, {
+    cache: 'no-store',
+    headers: await getAuthHeaders(),
+  });
   if (!res.ok) throw new Error('Failed to fetch case studies');
   return res.json() as Promise<CaseStudy[]>;
 }
@@ -135,7 +159,7 @@ export async function fetchCaseStudies(): Promise<CaseStudy[]> {
 export async function createCaseStudy(data: Omit<CaseStudy, 'id'>): Promise<CaseStudy> {
   const res = await fetch(`${API_BASE}/case-studies`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
     body: JSON.stringify({ ...data, tenantId: ORG_ID }),
   });
   if (!res.ok) throw new Error('Failed to create case study');
@@ -143,12 +167,18 @@ export async function createCaseStudy(data: Omit<CaseStudy, 'id'>): Promise<Case
 }
 
 export async function deleteCaseStudy(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/case-studies/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${API_BASE}/case-studies/${id}`, {
+    method: 'DELETE',
+    headers: await getAuthHeaders(),
+  });
   if (!res.ok) throw new Error('Failed to delete case study');
 }
 
 export async function fetchRateCards(): Promise<RateCard[]> {
-  const res = await fetch(`${API_BASE}/rate-cards?tenantId=${ORG_ID}`, { cache: 'no-store' });
+  const res = await fetch(`${API_BASE}/rate-cards?tenantId=${ORG_ID}`, {
+    cache: 'no-store',
+    headers: await getAuthHeaders(),
+  });
   if (!res.ok) throw new Error('Failed to fetch rate cards');
   return res.json() as Promise<RateCard[]>;
 }
@@ -156,7 +186,7 @@ export async function fetchRateCards(): Promise<RateCard[]> {
 export async function upsertRateCard(data: Omit<RateCard, 'id'>): Promise<RateCard> {
   const res = await fetch(`${API_BASE}/rate-cards`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
     body: JSON.stringify({ ...data, tenantId: ORG_ID }),
   });
   if (!res.ok) throw new Error('Failed to upsert rate card');
@@ -164,7 +194,10 @@ export async function upsertRateCard(data: Omit<RateCard, 'id'>): Promise<RateCa
 }
 
 export async function deleteRateCard(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/rate-cards/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${API_BASE}/rate-cards/${id}`, {
+    method: 'DELETE',
+    headers: await getAuthHeaders(),
+  });
   if (!res.ok) throw new Error('Failed to delete rate card');
 }
 
@@ -178,7 +211,10 @@ export interface Proposal {
 }
 
 export async function fetchProposals(): Promise<Proposal[]> {
-  const res = await fetch(`${API_BASE}/proposals?tenantId=${ORG_ID}`, { cache: 'no-store' });
+  const res = await fetch(`${API_BASE}/proposals?tenantId=${ORG_ID}`, {
+    cache: 'no-store',
+    headers: await getAuthHeaders(),
+  });
   if (!res.ok) throw new Error('Failed to fetch proposals');
   return res.json() as Promise<Proposal[]>;
 }
@@ -193,9 +229,36 @@ export async function createProposal(data: {
 }): Promise<Proposal> {
   const res = await fetch(`${API_BASE}/proposals`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to create proposal');
   return res.json() as Promise<Proposal>;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+  createdAt: string;
+}
+
+export async function fetchUsers(): Promise<User[]> {
+  const res = await fetch(`${API_BASE}/users`, {
+    cache: 'no-store',
+    headers: await getAuthHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to fetch users');
+  return res.json() as Promise<User[]>;
+}
+
+export async function updateUserRole(id: string, role: 'ADMIN' | 'MEMBER'): Promise<User> {
+  const res = await fetch(`${API_BASE}/users/${id}/role`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
+    body: JSON.stringify({ role }),
+  });
+  if (!res.ok) throw new Error('Failed to update user role');
+  return res.json() as Promise<User>;
 }

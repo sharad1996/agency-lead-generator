@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from './config/config.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { QueueModule } from './queue/queue.module';
@@ -14,6 +15,10 @@ import { MeetingsModule } from './modules/meetings/meetings.module';
 import { ContentModule } from './modules/content/content.module';
 import { ProposalsModule } from './modules/proposals/proposals.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
+import { JwtGuard } from './modules/auth/jwt.guard';
+import { RolesGuard } from './modules/auth/roles.guard';
 
 @Module({
   imports: [
@@ -32,6 +37,12 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     ContentModule,
     ProposalsModule,
     DashboardModule,
+    AuthModule,
+    UsersModule,
+  ],
+  providers: [
+    { provide: APP_GUARD, useClass: JwtGuard },
+    { provide: APP_GUARD, useClass: RolesGuard },
   ],
 })
 export class AppModule {}

@@ -1,6 +1,8 @@
 import { Controller, Post, Body, Logger } from '@nestjs/common';
 import { MeetingsService } from './meetings.service';
+import { Public } from '../auth/public.decorator';
 
+@Public()
 @Controller('webhooks/calcom')
 export class MeetingsController {
   private readonly logger = new Logger(MeetingsController.name);
