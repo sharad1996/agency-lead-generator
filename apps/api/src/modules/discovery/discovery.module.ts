@@ -5,6 +5,7 @@ import { DiscoveryService } from './discovery.service';
 import { DiscoveryController } from './discovery.controller';
 import { LeadDiscoveryProcessor } from './processors/lead-discovery.processor';
 import { ApolloAdapter } from './adapters/apollo.adapter';
+import { PeopleDataLabsAdapter } from './adapters/peopledatalabs.adapter';
 import { CsvAdapter } from './adapters/csv.adapter';
 import { CompaniesModule } from '../companies/companies.module';
 import { ContactsModule } from '../contacts/contacts.module';
@@ -22,7 +23,7 @@ import { QUEUES } from '../../queue/queue.constants';
     ContactsModule,
     LeadsModule,
   ],
-  providers: [DiscoveryService, LeadDiscoveryProcessor, ApolloAdapter, CsvAdapter],
+  providers: [DiscoveryService, LeadDiscoveryProcessor, ApolloAdapter, PeopleDataLabsAdapter, CsvAdapter],
   controllers: [DiscoveryController],
   exports: [DiscoveryService],
 })

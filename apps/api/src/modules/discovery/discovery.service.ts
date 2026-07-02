@@ -1,16 +1,18 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { CompaniesService } from '../companies/companies.service';
 import { ContactsService } from '../contacts/contacts.service';
 import { LeadsService } from '../leads/leads.service';
 import { ApolloAdapter } from './adapters/apollo.adapter';
+import { PeopleDataLabsAdapter } from './adapters/peopledatalabs.adapter';
 import { CsvAdapter } from './adapters/csv.adapter';
 import { QUEUES } from '../../queue/queue.constants';
 import { RawLead } from './adapters/lead-source.adapter';
 import { Prisma } from '@prisma/client';
 
-const DAILY_LEAD_LIMIT = 50;
+const DEFAULT_DAILY_LEAD_LIMIT = 50;
 
 export interface RunDiscoveryOptions {
   limit: number;
@@ -23,21 +25,31 @@ export class DiscoveryService {
 
   constructor(
     private readonly apolloAdapter: ApolloAdapter,
+    private readonly peopleDataLabsAdapter: PeopleDataLabsAdapter,
     private readonly csvAdapter: CsvAdapter,
     private readonly companiesService: CompaniesService,
     private readonly contactsService: ContactsService,
     private readonly leadsService: LeadsService,
+    private readonly configService: ConfigService,
     @InjectQueue(QUEUES.LEAD_SCORING) private readonly scoringQueue: Queue,
-  ) {}
+  ) { }
+
+  private getDailyLeadLimit(): number {
+    const configuredLimit = this.configService.get<number>('DAILY_LEAD_LIMIT');
+    const parsedLimit = Number(configuredLimit ?? DEFAULT_DAILY_LEAD_LIMIT);
+    return Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : DEFAULT_DAILY_LEAD_LIMIT;
+  }
 
   async runDiscovery(options: RunDiscoveryOptions): Promise<{ discovered: number }> {
+    const dailyLimit = this.getDailyLeadLimit();
     const todayCount = await this.leadsService.countCreatedToday();
-    if (todayCount >= DAILY_LEAD_LIMIT) {
-      this.logger.warn(`Daily limit reached (${todayCount}/${DAILY_LEAD_LIMIT}). Skipping discovery.`);
-      return { discovered: 0 };
+    if (todayCount >= dailyLimit) {
+      const message = `Daily limit reached (${todayCount}/${dailyLimit}). Skipping discovery.`;
+      this.logger.warn(message);
+      throw new Error(message);
     }
 
-    const remaining = DAILY_LEAD_LIMIT - todayCount;
+    const remaining = dailyLimit - todayCount;
     const effectiveLimit = Math.min(options.limit, remaining);
 
     this.logger.log(`Starting discovery: limit=${effectiveLimit} (${todayCount} created today)`);
@@ -56,6 +68,42 @@ export class DiscoveryService {
 
     this.logger.log(`Discovery complete: ${discovered} leads saved`);
     return { discovered };
+  }
+
+  async runPeopleDataLabsDiscovery(options: RunDiscoveryOptions): Promise<{ discovered: number }> {
+    const dailyLimit = this.getDailyLeadLimit();
+    const todayCount = await this.leadsService.countCreatedToday();
+    if (todayCount >= dailyLimit) {
+      const message = `Daily limit reached (${todayCount}/${dailyLimit}). Skipping PeopleDataLabs discovery.`;
+      this.logger.warn(message);
+      throw new Error(message);
+    }
+
+    const remaining = dailyLimit - todayCount;
+    const effectiveLimit = Math.min(options.limit, remaining);
+
+    this.logger.log(`Starting PeopleDataLabs discovery: limit=${effectiveLimit} (${todayCount} created today)`);
+
+    try {
+      const rawLeads = await this.peopleDataLabsAdapter.searchLeads({ limit: effectiveLimit });
+      let discovered = 0;
+
+      for (const raw of rawLeads) {
+        try {
+          await this.saveAndEnqueue(raw, options.tenantId);
+          discovered++;
+        } catch (err) {
+          this.logger.error(`Failed to save PeopleDataLabs lead ${raw.contact.email ?? raw.contact.firstName}: ${err}`);
+        }
+      }
+
+      this.logger.log(`PeopleDataLabs discovery complete: ${discovered} leads saved`);
+      return { discovered };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown PeopleDataLabs discovery error';
+      this.logger.error(message);
+      throw new Error(message);
+    }
   }
 
   async importFromCsv(buffer: Buffer, tenantId: string): Promise<{ imported: number }> {

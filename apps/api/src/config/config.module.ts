@@ -23,14 +23,16 @@ import * as Joi from 'joi';
         INTERNAL_API_SECRET: Joi.string().required(),
         ADMIN_EMAIL: Joi.string().email().required(),
         PORT: Joi.number().default(3001),
+        DAILY_LEAD_LIMIT: Joi.number().integer().min(1).default(500).optional(),
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'test')
           .default('development'),
         DISABLE_AUTH: Joi.boolean().default(false),
         ORG_ID: Joi.string().uuid().required(),
         ORG_NAME: Joi.string().required(),
+        PEOPLEDATALABS_API_KEY: Joi.string().required(),
       }),
     }),
   ],
 })
-export class ConfigModule {}
+export class ConfigModule { }

@@ -79,14 +79,7 @@ export class ContactsRepository {
       });
     }
 
-    // Path 3: neither apolloId nor email — warn and create (may produce duplicates)
-    if (!dto.email && !dto.apolloId) {
-      // Without a unique identifier we cannot dedup — caller should validate input
-      throw new Error(
-        `Cannot upsert contact "${dto.firstName} ${dto.lastName}": neither apolloId nor email provided`,
-      );
-    }
-
+    // Path 3: neither apolloId nor email — create a fallback contact record
     return this.prisma.contact.create({
       data: {
         tenantId: dto.tenantId,

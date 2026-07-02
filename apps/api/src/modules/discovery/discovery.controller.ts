@@ -51,6 +51,25 @@ export class DiscoveryController {
     return result;
   }
 
+  @Post('run-peopledatalabs')
+  @Public()
+  @ApiOperation({ summary: 'Run PeopleDataLabs discovery synchronously (debug only)' })
+  async runPeopleDataLabsNow(@Body() dto: TriggerDiscoveryDto) {
+    const tenantId = this.config.get<string>('ORG_ID')!;
+    try {
+      const result = await this.discoveryService.runPeopleDataLabsDiscovery({ limit: dto.limit, tenantId });
+      console.log(result, "////////result")
+      return result;
+    }
+    catch (error) {
+      const message = error instanceof Error ? error.message : 'PeopleDataLabs discovery failed';
+      return {
+        discovered: 0,
+        error: message,
+      };
+    }
+  }
+
   @Post('import/csv')
   @Public()
   @ApiOperation({ summary: 'Import leads from CSV file' })
