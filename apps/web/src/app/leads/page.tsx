@@ -1,4 +1,4 @@
-import { fetchLeads, LeadsResponse } from '@/lib/api-client';
+import { fetchLeads, LeadsResponse, triggerDiscovery } from '@/lib/api-client';
 import { LeadsTable } from '@/components/leads/leads-table';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,15 +6,7 @@ import { revalidatePath } from 'next/cache';
 
 async function triggerDiscoveryAction() {
   'use server';
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1'}/discovery/run`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ limit: 50 }),
-    },
-  );
-  if (!res.ok) throw new Error('Discovery trigger failed');
+  await triggerDiscovery(50);
   revalidatePath('/leads');
 }
 
