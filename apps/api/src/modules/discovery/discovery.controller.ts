@@ -13,6 +13,7 @@ import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { IsInt, Min, Max } from 'class-validator';
 import { Type } from 'class-transformer';
+import { Public } from '../auth/public.decorator';
 import { DiscoveryService } from './discovery.service';
 import { QUEUES } from '../../queue/queue.constants';
 
@@ -34,6 +35,7 @@ export class DiscoveryController {
   ) { }
 
   @Post('trigger')
+  @Public()
   @ApiOperation({ summary: 'Trigger Apollo lead discovery job (max 50 leads/day)' })
   async trigger(@Body() dto: TriggerDiscoveryDto) {
     const job = await this.discoveryQueue.add('discover', { limit: dto.limit });
@@ -41,6 +43,7 @@ export class DiscoveryController {
   }
 
   @Post('run')
+  @Public()
   @ApiOperation({ summary: 'Run Apollo discovery synchronously (debug only)' })
   async runNow(@Body() dto: TriggerDiscoveryDto) {
     const tenantId = this.config.get<string>('ORG_ID')!;
@@ -49,6 +52,7 @@ export class DiscoveryController {
   }
 
   @Post('import/csv')
+  @Public()
   @ApiOperation({ summary: 'Import leads from CSV file' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({

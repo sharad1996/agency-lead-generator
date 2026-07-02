@@ -58,16 +58,19 @@ export async function fetchLeads(params?: {
 
   const res = await fetch(`${API_BASE}/leads?${query}`, {
     cache: 'no-store',
-    headers: await getAuthHeaders(),
+    // headers: await getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch leads');
   return res.json() as Promise<LeadsResponse>;
 }
 
 export async function triggerDiscovery(limit = 50): Promise<{ jobId: string; message: string }> {
-  const res = await fetch(`${API_BASE}/discovery/trigger`, {
+  const res = await fetch(`${API_BASE}/discovery/run`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
+    headers: {
+      'Content-Type': 'application/json',
+      // ...(await getAuthHeaders())
+    },
     body: JSON.stringify({ limit }),
   });
   if (!res.ok) throw new Error('Failed to trigger discovery');
@@ -102,7 +105,7 @@ export async function fetchPendingApprovals(): Promise<PendingApproval[]> {
 export async function approveStep(stepId: string): Promise<void> {
   const res = await fetch(`${API_BASE}/approvals/${stepId}/approve?tenantId=${ORG_ID}`, {
     method: 'POST',
-    headers: await getAuthHeaders(),
+    // headers: await getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to approve step');
 }
@@ -110,7 +113,7 @@ export async function approveStep(stepId: string): Promise<void> {
 export async function rejectStep(stepId: string): Promise<void> {
   const res = await fetch(`${API_BASE}/approvals/${stepId}/reject?tenantId=${ORG_ID}`, {
     method: 'POST',
-    headers: await getAuthHeaders(),
+    // headers: await getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to reject step');
 }
@@ -125,7 +128,7 @@ export interface DashboardMetrics {
 export async function fetchDashboardMetrics(): Promise<DashboardMetrics> {
   const res = await fetch(`${API_BASE}/dashboard/metrics?tenantId=${ORG_ID}`, {
     cache: 'no-store',
-    headers: await getAuthHeaders(),
+    // headers: await getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch dashboard metrics');
   return res.json() as Promise<DashboardMetrics>;
@@ -154,7 +157,7 @@ export interface RateCard {
 export async function fetchCaseStudies(): Promise<CaseStudy[]> {
   const res = await fetch(`${API_BASE}/case-studies?tenantId=${ORG_ID}`, {
     cache: 'no-store',
-    headers: await getAuthHeaders(),
+    // headers: await getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch case studies');
   return res.json() as Promise<CaseStudy[]>;
@@ -173,7 +176,7 @@ export async function createCaseStudy(data: Omit<CaseStudy, 'id'>): Promise<Case
 export async function deleteCaseStudy(id: string): Promise<void> {
   const res = await fetch(`${API_BASE}/case-studies/${id}`, {
     method: 'DELETE',
-    headers: await getAuthHeaders(),
+    // headers: await getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to delete case study');
 }
@@ -181,7 +184,7 @@ export async function deleteCaseStudy(id: string): Promise<void> {
 export async function fetchRateCards(): Promise<RateCard[]> {
   const res = await fetch(`${API_BASE}/rate-cards?tenantId=${ORG_ID}`, {
     cache: 'no-store',
-    headers: await getAuthHeaders(),
+    // headers: await getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch rate cards');
   return res.json() as Promise<RateCard[]>;
@@ -190,7 +193,10 @@ export async function fetchRateCards(): Promise<RateCard[]> {
 export async function upsertRateCard(data: Omit<RateCard, 'id'>): Promise<RateCard> {
   const res = await fetch(`${API_BASE}/rate-cards`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
+    headers: {
+      'Content-Type': 'application/json',
+      // ...(await getAuthHeaders())
+    },
     body: JSON.stringify({ ...data, tenantId: ORG_ID }),
   });
   if (!res.ok) throw new Error('Failed to upsert rate card');
@@ -200,7 +206,7 @@ export async function upsertRateCard(data: Omit<RateCard, 'id'>): Promise<RateCa
 export async function deleteRateCard(id: string): Promise<void> {
   const res = await fetch(`${API_BASE}/rate-cards/${id}`, {
     method: 'DELETE',
-    headers: await getAuthHeaders(),
+    // headers: await getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to delete rate card');
 }
@@ -217,7 +223,7 @@ export interface Proposal {
 export async function fetchProposals(): Promise<Proposal[]> {
   const res = await fetch(`${API_BASE}/proposals?tenantId=${ORG_ID}`, {
     cache: 'no-store',
-    headers: await getAuthHeaders(),
+    // headers: await getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch proposals');
   return res.json() as Promise<Proposal[]>;
@@ -233,7 +239,10 @@ export async function createProposal(data: {
 }): Promise<Proposal> {
   const res = await fetch(`${API_BASE}/proposals`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
+    headers: {
+      'Content-Type': 'application/json',
+      // ...(await getAuthHeaders())
+    },
     body: JSON.stringify(data),
   });
   if (!res.ok) throw new Error('Failed to create proposal');
@@ -251,7 +260,7 @@ export interface User {
 export async function fetchUsers(): Promise<User[]> {
   const res = await fetch(`${API_BASE}/users`, {
     cache: 'no-store',
-    headers: await getAuthHeaders(),
+    // headers: await getAuthHeaders(),
   });
   if (!res.ok) throw new Error('Failed to fetch users');
   return res.json() as Promise<User[]>;
@@ -260,7 +269,10 @@ export async function fetchUsers(): Promise<User[]> {
 export async function updateUserRole(id: string, role: 'ADMIN' | 'MEMBER'): Promise<User> {
   const res = await fetch(`${API_BASE}/users/${id}/role`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...(await getAuthHeaders()) },
+    headers: {
+      'Content-Type': 'application/json',
+      // ...(await getAuthHeaders())
+    },
     body: JSON.stringify({ role }),
   });
   if (!res.ok) throw new Error('Failed to update user role');
