@@ -1,9 +1,12 @@
 import { AuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import { SignJWT, jwtVerify } from 'jose';
 
 const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET!);
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+
+const isDev = process.env.NODE_ENV === 'development';
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -11,6 +14,26 @@ export const authOptions: AuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
+    // Dev-only: sign in locally without going through Google OAuth.
+    ...(isDev
+      ? [
+          CredentialsProvider({
+            id: 'dev',
+            name: 'Dev Login',
+            credentials: {
+              email: { label: 'Email', type: 'email' },
+            },
+            async authorize(credentials) {
+              const email = credentials?.email || 'dev@localhost';
+              return {
+                id: `dev-${email}`,
+                email,
+                name: email.split('@')[0],
+              };
+            },
+          }),
+        ]
+      : []),
   ],
   session: { strategy: 'jwt' },
   jwt: {
