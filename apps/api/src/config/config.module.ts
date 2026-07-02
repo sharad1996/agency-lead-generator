@@ -26,6 +26,7 @@ import * as Joi from 'joi';
         NODE_ENV: Joi.string()
           .valid('development', 'production', 'test')
           .default('development'),
+        DISABLE_AUTH: Joi.boolean().default(false),
         ORG_ID: Joi.string().uuid().required(),
         ORG_NAME: Joi.string().required(),
       }),
