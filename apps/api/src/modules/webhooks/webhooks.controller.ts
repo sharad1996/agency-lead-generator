@@ -1,6 +1,8 @@
 import { Controller, Post, Body, Logger } from '@nestjs/common';
 import { WebhooksService } from './webhooks.service';
+import { Public } from '../auth/public.decorator';
 
+@Public()
 @Controller('webhooks')
 export class WebhooksController {
   private readonly logger = new Logger(WebhooksController.name);

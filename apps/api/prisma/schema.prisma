@@ -22,6 +22,7 @@ model Organization {
   sequences    OutreachSequence[]
   caseStudies  CaseStudy[]
   rateCards    RateCard[]
+  users        User[]
 }
 
 model Company {
@@ -291,6 +292,26 @@ model CaseStudy {
   challenge String
   solution  String
   result    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
+enum UserRole {
+  ADMIN
+  MEMBER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  tenantId  String
+  email     String   @unique
+  name      String?
+  googleId  String   @unique
+  role      UserRole @default(MEMBER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
