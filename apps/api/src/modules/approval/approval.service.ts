@@ -29,21 +29,27 @@ export class ApprovalService {
     private readonly leadsRepo: LeadsRepository,
     private readonly sendGrid: SendGridService,
     @InjectQueue(QUEUES.FOLLOWUP) private readonly followupQueue: Queue,
-  ) {}
+  ) { }
 
   async listPendingApprovals(tenantId: string): Promise<PendingApprovalDto[]> {
     const steps = await this.outreachRepo.findPendingApprovalSteps(tenantId);
-    return steps.map((step) => ({
-      stepId: step.id,
-      leadId: step.sequence.lead.id,
-      contactName: `${step.sequence.lead.contact.firstName} ${step.sequence.lead.contact.lastName}`,
-      contactEmail: step.sequence.lead.contact.email,
-      contactTitle: step.sequence.lead.contact.title,
-      companyName: step.sequence.lead.company.name,
-      subject: step.subject ?? '',
-      body: step.body ?? '',
-      scheduledAt: step.scheduledAt,
-    }));
+    return steps.map((step) => {
+      const firstName = step.sequence.lead.contact.firstName ?? '';
+      const lastName = step.sequence.lead.contact.lastName ?? '';
+      const contactName = `${firstName} ${lastName}`.trim();
+
+      return {
+        stepId: step.id,
+        leadId: step.sequence.lead.id,
+        contactName,
+        contactEmail: step.sequence.lead.contact.email,
+        contactTitle: step.sequence.lead.contact.title,
+        companyName: step.sequence.lead.company.name,
+        subject: step.subject ?? '',
+        body: (step.body ?? '').replace(/\[Your Name\]/gi, firstName),
+        scheduledAt: step.scheduledAt,
+      };
+    });
   }
 
   async approve(stepId: string, tenantId: string): Promise<void> {

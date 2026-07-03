@@ -20,7 +20,7 @@ export interface UpdateLeadScoreDto {
 
 @Injectable()
 export class LeadsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async create(dto: CreateLeadDto): Promise<Lead> {
     return this.prisma.lead.create({
@@ -37,7 +37,16 @@ export class LeadsRepository {
 
   async findAll(
     filters: LeadFiltersDto & { tenantId: string },
-  ): Promise<{ leads: Lead[]; total: number }> {
+  ): Promise<{
+    leads: Lead[]; pagination: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
+  }> {
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 50;
     const where: Prisma.LeadWhereInput = {
       tenantId: filters.tenantId,
       ...(filters.status && { status: filters.status }),
@@ -49,13 +58,21 @@ export class LeadsRepository {
         where,
         include: { contact: true, company: true },
         orderBy: { createdAt: 'desc' },
-        skip: ((filters.page ?? 1) - 1) * (filters.limit ?? 20),
-        take: filters.limit ?? 20,
+        skip: (page - 1) * limit,
+        take: limit,
       }),
       this.prisma.lead.count({ where }),
     ]);
 
-    return { leads, total };
+    return {
+      leads: leads,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findById(id: string, tenantId: string): Promise<Lead | null> {
