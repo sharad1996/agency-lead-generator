@@ -31,7 +31,7 @@ export type OutreachStepWithSequence = OutreachStep & {
 
 @Injectable()
 export class OutreachRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   async createSequence(dto: CreateSequenceDto): Promise<OutreachSequence> {
     return this.prisma.outreachSequence.create({
@@ -123,6 +123,21 @@ export class OutreachRepository {
 
   async updateStep(id: string, data: Partial<Pick<OutreachStep, 'status' | 'sentAt' | 'subject' | 'body' | 'messageId' | 'openedAt'>>): Promise<OutreachStep> {
     return this.prisma.outreachStep.update({ where: { id }, data });
+  }
+
+  async updateEmail(
+    id: string,
+    data: Partial<
+      Pick<
+        OutreachStep,
+        "status" | "sentAt" | "subject" | "body" | "messageId" | "openedAt"
+      >
+    >,
+  ): Promise<OutreachStep> {
+    return this.prisma.outreachStep.update({
+      where: { id },
+      data,
+    });
   }
 
   async updateSequence(id: string, data: Partial<Pick<OutreachSequence, 'status' | 'stoppedAt' | 'currentStep'>>): Promise<OutreachSequence> {

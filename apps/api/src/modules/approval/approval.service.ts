@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { LeadStatus, SequenceStatus, StepStatus } from '@prisma/client';
+import { LeadStatus, SequenceStatus, StepStatus, OutreachStep } from '@prisma/client';
 import { OutreachRepository } from '../outreach/outreach.repository';
 import { LeadsRepository } from '../leads/leads.repository';
 import { SendGridService } from '../outreach/sendgrid.service';
@@ -100,6 +100,30 @@ export class ApprovalService {
 
     this.logger.log(`Step ${stepId} approved and sent to ${lead.contact.email}`);
   }
+
+  async updateStep(
+    stepId: string,
+    tenantId: string,
+    subject: string,
+    body: string,
+  ): Promise<OutreachStep> {
+    const step = await this.outreachRepo.findStepById(stepId);
+
+    if (!step || step.sequence.lead.tenantId !== tenantId) {
+      throw new NotFoundException(`Step ${stepId} not found`);
+    }
+
+    const updatedStep = await this.outreachRepo.updateEmail(stepId, {
+      subject,
+      body,
+    });
+
+    this.logger.log(`Step ${stepId} updated successfully`);
+
+    return updatedStep; // No longer returning anything
+  }
+
+
 
   async reject(stepId: string, tenantId: string): Promise<void> {
     const step = await this.outreachRepo.findStepById(stepId);

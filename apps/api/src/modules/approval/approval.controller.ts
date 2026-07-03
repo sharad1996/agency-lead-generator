@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, Patch } from '@nestjs/common';
 import { ApprovalService } from './approval.service';
 import { Public } from '../auth/public.decorator';
 
@@ -10,6 +10,16 @@ export class ApprovalController {
   @Public()
   listPending(@Query('tenantId') tenantId: string) {
     return this.approvalService.listPendingApprovals(tenantId);
+  }
+  @Patch(':stepId/edit')
+  @Public()
+  updateStep(
+    @Param('stepId') stepId: string,
+    @Query('tenantId') tenantId: string,
+    @Query('subject') subject: string,
+    @Query('body') body: string,
+  ) {
+    return this.approvalService.updateStep(stepId, tenantId, subject, body);
   }
 
   @Post(':stepId/approve')

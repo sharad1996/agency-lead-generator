@@ -1,5 +1,7 @@
 import { fetchPendingApprovals, PendingApproval } from '@/lib/api-client';
-import { approveAction, rejectAction } from './actions';
+import { approveAction, rejectAction, editAction } from './actions';
+import ApprovalCard from './approval';
+
 
 export default async function ApprovalsPage() {
   let approvals: PendingApproval[] = [];
@@ -8,6 +10,7 @@ export default async function ApprovalsPage() {
   } catch {
     // API not running during build — show empty state
   }
+
 
   return (
     <main className="p-8 max-w-5xl mx-auto">
@@ -28,40 +31,14 @@ export default async function ApprovalsPage() {
       ) : (
         <div className="space-y-4">
           {approvals.map((item) => (
-            <div key={item.stepId} className="rounded-lg border bg-white p-6 shadow-sm">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="font-semibold">{item.contactName}</div>
-                  <div className="text-sm text-gray-500">
-                    {item.contactTitle ? `${item.contactTitle} · ` : ''}
-                    {item.companyName} · {item.contactEmail}
-                  </div>
-                </div>
-                <div className="flex gap-2 shrink-0">
-                  <form action={approveAction.bind(null, item.stepId)}>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700"
-                    >
-                      Approve &amp; Send
-                    </button>
-                  </form>
-                  <form action={rejectAction.bind(null, item.stepId)}>
-                    <button
-                      type="submit"
-                      className="px-4 py-2 bg-red-100 text-red-700 rounded-md text-sm font-medium hover:bg-red-200"
-                    >
-                      Reject
-                    </button>
-                  </form>
-                </div>
-              </div>
+            <ApprovalCard
+              key={item.stepId}
+              item={item}
+              approveAction={approveAction}
+              rejectAction={rejectAction}
+              editAction={editAction}
+            />
 
-              <div className="mt-4 rounded-md bg-gray-50 p-4 text-sm">
-                <div className="font-medium mb-1">Subject: {item.subject}</div>
-                <div className="whitespace-pre-wrap text-gray-700">{item.body}</div>
-              </div>
-            </div>
           ))}
         </div>
       )}

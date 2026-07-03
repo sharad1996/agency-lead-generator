@@ -110,6 +110,20 @@ export async function approveStep(stepId: string): Promise<void> {
   if (!res.ok) throw new Error('Failed to approve step');
 }
 
+export async function updateStep(
+  stepId: string,
+  subject: string,
+  body: string,
+) {
+  const res = await fetch(`${API_BASE}/approvals/${stepId}/edit?tenantId=${ORG_ID}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, {
+    method: "PATCH",
+    // headers: {
+    //   "Content-Type": "application/json",
+    // },
+  });
+  if (!res.ok) throw new Error('Failed to update step');
+}
+
 export async function rejectStep(stepId: string): Promise<void> {
   const res = await fetch(`${API_BASE}/approvals/${stepId}/reject?tenantId=${ORG_ID}`, {
     method: 'POST',
