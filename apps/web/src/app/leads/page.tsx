@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default async function LeadsPage({ searchParams }: Props) {
-const params = await searchParams;
+  const params = await searchParams;
 
   const page = Number(params.page ?? 1);
 
@@ -37,7 +37,7 @@ const params = await searchParams;
       page,
       limit: 50,
     });
-  } catch {}
+  } catch { }
   return (
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
@@ -56,10 +56,13 @@ const params = await searchParams;
         </CardHeader>
         <CardContent>
           <LeadsTable leads={data.leads} />
-           <LeadsPagination
-            page={data.pagination.page}
-            totalPages={data.pagination.totalPages}
-      />
+          {data.pagination.total > 50 && (
+            <LeadsPagination
+              page={data.pagination.page}
+              totalPages={data.pagination.totalPages}
+            />
+          )}
+
         </CardContent>
       </Card>
     </div>
