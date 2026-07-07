@@ -7,28 +7,27 @@ datasource db {
 }
 
 model Organization {
-  id        String   @id @default(uuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  companies    Company[]
-  contacts     Contact[]
-  leads        Lead[]
-  activities   Activity[]
+  id            String             @id @default(uuid())
+  name          String
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  activities    Activity[]
+  caseStudies   CaseStudy[]
+  companies     Company[]
+  contacts      Contact[]
+  leads         Lead[]
+  meetings      Meeting[]
   opportunities Opportunity[]
-  meetings     Meeting[]
-  proposals    Proposal[]
-  sequences    OutreachSequence[]
-  caseStudies  CaseStudy[]
-  rateCards    RateCard[]
-  users        User[]
+  sequences     OutreachSequence[]
+  proposals     Proposal[]
+  rateCards     RateCard[]
+  users         User[]
 }
 
 model Company {
-  id            String   @id @default(uuid())
+  id            String       @id @default(uuid())
   tenantId      String
-  apolloId      String?  @unique
+  apolloId      String?      @unique
   name          String
   website       String?
   industry      String?
@@ -37,64 +36,213 @@ model Company {
   fundingAmount Float?
   techStack     String[]
   location      String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  contacts     Contact[]
-  leads        Lead[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  organization  Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  contacts      Contact[]
+  leads         Lead[]
 
   @@index([tenantId])
   @@index([name])
 }
 
 model Contact {
-  id          String   @id @default(uuid())
-  tenantId    String
-  companyId   String
-  apolloId    String?  @unique
-  firstName   String
-  lastName    String
-  email       String?
-  linkedinUrl String?
-  title       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  id           String       @id @default(uuid())
+  tenantId     String
+  companyId    String
+  apolloId     String?      @unique
+  firstName    String
+  lastName     String
+  email        String?
+  linkedinUrl  String?
+  title        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
   company      Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   leads        Lead[]
 
+  @@unique([tenantId, email])
   @@index([tenantId])
   @@index([companyId])
-  @@unique([tenantId, email])
 }
 
 model Lead {
-  id            String     @id @default(uuid())
+  id            String            @id @default(uuid())
   tenantId      String
   contactId     String
   companyId     String
-  status        LeadStatus @default(NEW)
+  status        LeadStatus        @default(NEW)
   score         Int?
   priority      Priority?
   scoreReasons  String[]
   hiringSignals Json?
-  source        String     @default("apollo")
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-
-  organization  Organization       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  contact       Contact            @relation(fields: [contactId], references: [id], onDelete: Cascade)
-  company       Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  source        String            @default("apollo")
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
   activities    Activity[]
-  opportunities Opportunity[]
+  company       Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  contact       Contact           @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  organization  Organization      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   meetings      Meeting[]
-  sequences     OutreachSequence[]
+  opportunities Opportunity[]
+  sequences     OutreachSequence?
 
   @@index([tenantId])
   @@index([status])
   @@index([priority])
+}
+
+model Activity {
+  id           String       @id @default(uuid())
+  tenantId     String
+  leadId       String?
+  type         ActivityType
+  description  String
+  metadata     Json?
+  createdAt    DateTime     @default(now())
+  lead         Lead?        @relation(fields: [leadId], references: [id])
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([leadId])
+}
+
+model Opportunity {
+  id           String           @id @default(uuid())
+  tenantId     String
+  leadId       String
+  title        String
+  value        Float?
+  stage        OpportunityStage @default(DISCOVERY)
+  closeDate    DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  meetings     Meeting[]
+  lead         Lead             @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  organization Organization     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  proposals    Proposal[]
+
+  @@index([tenantId])
+}
+
+model Meeting {
+  id            String        @id @default(uuid())
+  tenantId      String
+  leadId        String
+  opportunityId String?
+  calComEventId String?
+  scheduledAt   DateTime
+  durationMins  Int
+  status        MeetingStatus @default(SCHEDULED)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  lead          Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  opportunity   Opportunity?  @relation(fields: [opportunityId], references: [id])
+  organization  Organization  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([scheduledAt])
+}
+
+model Proposal {
+  id            String         @id @default(uuid())
+  tenantId      String
+  opportunityId String
+  title         String
+  content       Json
+  pdfUrl        String?
+  status        ProposalStatus @default(DRAFT)
+  sentAt        DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  opportunity   Opportunity    @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  organization  Organization   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
+model OutreachSequence {
+  id           String         @id @default(uuid())
+  tenantId     String
+  leadId       String         @unique
+  sequenceType String
+  currentStep  Int            @default(0)
+  status       SequenceStatus @default(ACTIVE)
+  startedAt    DateTime       @default(now())
+  stoppedAt    DateTime?
+  lead         Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  organization Organization   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  steps        OutreachStep[]
+
+  @@index([tenantId])
+  @@index([status])
+}
+
+model OutreachStep {
+  id          String           @id @default(uuid())
+  sequenceId  String
+  tenantId    String
+  stepNumber  Int
+  scheduledAt DateTime
+  sentAt      DateTime?
+  subject     String?
+  body        String?
+  status      StepStatus       @default(PENDING)
+  messageId   String?
+  openedAt    DateTime?
+  sequence    OutreachSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+
+  @@index([sequenceId])
+  @@index([scheduledAt])
+  @@index([tenantId])
+}
+
+model CaseStudy {
+  id           String       @id @default(uuid())
+  tenantId     String
+  title        String
+  client       String
+  industry     String?
+  techStack    String[]
+  challenge    String
+  solution     String
+  result       String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
+model User {
+  id           String       @id @default(uuid())
+  tenantId     String
+  email        String       @unique
+  name         String?
+  googleId     String       @unique
+  role         UserRole     @default(MEMBER)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+}
+
+model RateCard {
+  id             String       @id @default(uuid())
+  tenantId       String
+  role           String
+  seniorityLevel String
+  monthlyRate    Float
+  hourlyRate     Float
+  currency       String       @default("USD")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, role, seniorityLevel])
+  @@index([tenantId])
 }
 
 enum LeadStatus {
@@ -117,22 +265,6 @@ enum Priority {
   COLD
 }
 
-model Activity {
-  id           String       @id @default(uuid())
-  tenantId     String
-  leadId       String?
-  type         ActivityType
-  description  String
-  metadata     Json?
-  createdAt    DateTime     @default(now())
-
-  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  lead         Lead?        @relation(fields: [leadId], references: [id], onDelete: SetNull)
-
-  @@index([tenantId])
-  @@index([leadId])
-}
-
 enum ActivityType {
   LEAD_CREATED
   SCORE_CALCULATED
@@ -146,25 +278,6 @@ enum ActivityType {
   STATUS_CHANGED
 }
 
-model Opportunity {
-  id          String           @id @default(uuid())
-  tenantId    String
-  leadId      String
-  title       String
-  value       Float?
-  stage       OpportunityStage @default(DISCOVERY)
-  closeDate   DateTime?
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-
-  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  lead         Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  proposals    Proposal[]
-  meetings     Meeting[]
-
-  @@index([tenantId])
-}
-
 enum OpportunityStage {
   DISCOVERY
   PROPOSAL_SENT
@@ -173,49 +286,11 @@ enum OpportunityStage {
   CLOSED_LOST
 }
 
-model Meeting {
-  id            String        @id @default(uuid())
-  tenantId      String
-  leadId        String
-  opportunityId String?
-  calComEventId String?
-  scheduledAt   DateTime
-  durationMins  Int
-  status        MeetingStatus @default(SCHEDULED)
-  notes         String?
-  createdAt     DateTime      @default(now())
-
-  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  lead         Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  opportunity  Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
-
-  @@index([tenantId])
-  @@index([scheduledAt])
-}
-
 enum MeetingStatus {
   SCHEDULED
   COMPLETED
   CANCELLED
   NO_SHOW
-}
-
-model Proposal {
-  id            String         @id @default(uuid())
-  tenantId      String
-  opportunityId String
-  title         String
-  content       Json
-  pdfUrl        String?
-  status        ProposalStatus @default(DRAFT)
-  sentAt        DateTime?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-
-  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  opportunity  Opportunity  @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
 }
 
 enum ProposalStatus {
@@ -226,49 +301,11 @@ enum ProposalStatus {
   REJECTED
 }
 
-model OutreachSequence {
-  id           String         @id @default(uuid())
-  tenantId     String
-  leadId       String         @unique
-  sequenceType String
-  currentStep  Int            @default(0)
-  status       SequenceStatus @default(ACTIVE)
-  startedAt    DateTime       @default(now())
-  stoppedAt    DateTime?
-
-  organization Organization   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  lead         Lead           @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  steps        OutreachStep[]
-
-  @@index([tenantId])
-  @@index([status])
-}
-
 enum SequenceStatus {
   ACTIVE
   PAUSED
   STOPPED
   COMPLETED
-}
-
-model OutreachStep {
-  id          String     @id @default(uuid())
-  sequenceId  String
-  tenantId    String
-  stepNumber  Int
-  scheduledAt DateTime
-  sentAt      DateTime?
-  subject     String?
-  body        String?
-  status      StepStatus @default(PENDING)
-  messageId   String?
-  openedAt    DateTime?
-
-  sequence OutreachSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
-
-  @@index([sequenceId])
-  @@index([scheduledAt])
-  @@index([tenantId])
 }
 
 enum StepStatus {
@@ -282,57 +319,7 @@ enum StepStatus {
   FAILED
 }
 
-model CaseStudy {
-  id        String   @id @default(uuid())
-  tenantId  String
-  title     String
-  client    String
-  industry  String?
-  techStack String[]
-  challenge String
-  solution  String
-  result    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-}
-
 enum UserRole {
   ADMIN
   MEMBER
-}
-
-model User {
-  id        String   @id @default(uuid())
-  tenantId  String
-  email     String   @unique
-  name      String?
-  googleId  String   @unique
-  role      UserRole @default(MEMBER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-}
-
-model RateCard {
-  id             String   @id @default(uuid())
-  tenantId       String
-  role           String
-  seniorityLevel String
-  monthlyRate    Float
-  hourlyRate     Float
-  currency       String   @default("USD")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  organization Organization @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-
-  @@index([tenantId])
-  @@unique([tenantId, role, seniorityLevel])
 }
