@@ -3,6 +3,7 @@ import * as React from "react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react"
+import Link from "next/link";
 
 
 interface Pagination {
@@ -59,7 +60,8 @@ function PaginationLink({
       className={cn(className)}
       nativeButton={false}
       render={
-        <a
+        <Link
+          href={href ?? "#"}
           aria-current={isActive ? "page" : undefined}
           data-slot="pagination-link"
           data-active={isActive}
