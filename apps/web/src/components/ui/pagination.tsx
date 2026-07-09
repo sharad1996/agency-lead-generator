@@ -59,7 +59,7 @@ function PaginationLink({
       className={cn(className)}
       nativeButton={false}
       render={
-         <a
+        <a
           aria-current={isActive ? "page" : undefined}
           data-slot="pagination-link"
           data-active={isActive}

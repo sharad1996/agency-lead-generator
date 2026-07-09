@@ -35,20 +35,20 @@ export function LeadsPagination({
       <PaginationContent>
         <PaginationItem>
           {page > 1 ? (
-            <Link href={`?page=${page - 1}`}>
-              <PaginationPrevious />
-            </Link>
+            <PaginationPrevious href={`?page=${page - 1}`} />
           ) : (
-            <PaginationPrevious className="pointer-events-none opacity-50" />
+            <PaginationPrevious
+              href="#"
+              className="pointer-events-none opacity-50"
+              aria-disabled
+            />
           )}
         </PaginationItem>
 
         {start > 1 && (
           <>
             <PaginationItem>
-              <Link href="?page=1">
-                <PaginationLink>1</PaginationLink>
-              </Link>
+              <PaginationLink href="?page=1">1</PaginationLink>
             </PaginationItem>
 
             {start > 2 && (
@@ -61,13 +61,12 @@ export function LeadsPagination({
 
         {pages.map((p) => (
           <PaginationItem key={p}>
-             <Link href={`?page=${p}`}>
             <PaginationLink
+              href={`?page=${p}`}
               isActive={page === p}
             >
               {p}
             </PaginationLink>
-            </Link>
           </PaginationItem>
         ))}
 
@@ -91,11 +90,13 @@ export function LeadsPagination({
 
         <PaginationItem>
           {page < totalPages ? (
-            <Link href={`?page=${page + 1}`}>
-              <PaginationNext />
-            </Link>
+            <PaginationNext href={`?page=${page + 1}`} />
           ) : (
-            <PaginationNext className="pointer-events-none opacity-50" />
+            <PaginationNext
+              href="#"
+              className="pointer-events-none opacity-50"
+              aria-disabled
+            />
           )}
         </PaginationItem>
       </PaginationContent>
